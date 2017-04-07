@@ -24,7 +24,6 @@
   <ItemGroup>
     <Compile Include="ioManager.py" />
     <Compile Include="Scratch.py" />
-    <Compile Include="sys_helper.py" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="calc.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ioManager.py" />
     <Compile Include="Scratch.py" />
   </ItemGroup>

@@ -1,1 +1,1 @@
-Notes : ./notes/Layer.htm
+1. [Layer](http://dlspace.github.io/Scratch/notes/Layer.htm)

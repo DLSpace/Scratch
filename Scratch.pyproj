@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>57535875-1420-4177-b941-b89873be085f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Scratch.py</StartupFile>
+    <StartupFile>layer.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

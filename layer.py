@@ -2,6 +2,7 @@ import numpy as np
 import theano as th
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
+from theano import function
 import time
 
 import unittest
@@ -19,6 +20,11 @@ class Layer:
 	weights = [];
 	biases = [];
 	sharedRandomStream = RandomStreams(seed=int(round(time.time())));
+	#ia = T.dvector('ia');
+	#w = T.dmatrix('w');
+	#b = T.dvector('b');
+	#a = T.nnet.sigmoid((T.dot(ia,w))+b);
+	#calcActivationsFunc = function([ia,w,b],a);
 
 	def initializeState(self, kwargs):
 		"""
@@ -34,15 +40,15 @@ class Layer:
 		"""
 		logging.info(kwargs);
 		if kwargs.get('neurons') is not None:
-			logging.info("neuron count is %s" % (kwargs['neurons']))
-			self.neuronCount = int(kwargs['neurons'])
-			self.activations = T.zeros(shape=[self.neuronCount])
+			logging.info("neuron count is %s" % (kwargs['neurons']));
+			self.neuronCount = int(kwargs['neurons']);
+			self.activations = T.zeros(shape=[self.neuronCount]);
 		if kwargs.get('inputNeurons') is not None:
-			logging.info("inputNeurons count is %s" % (kwargs['inputNeurons']))
-			self.inputNeuronCount = int(kwargs['inputNeurons'])
+			logging.info("inputNeurons count is %s" % (kwargs['inputNeurons']));
+			self.inputNeuronCount = int(kwargs['inputNeurons']);
 		if kwargs.get('sharedBias') is not None:
-			logging.info("Shared Bias is %s" % (kwargs['sharedBias']))
-			self.sharedBias = bool(kwargs['sharedBias'])
+			logging.info("Shared Bias is %s" % (kwargs['sharedBias']));
+			self.sharedBias = bool(kwargs['sharedBias']);
 
 
 	def randomizeWeightsandBiases(self):
@@ -70,7 +76,8 @@ class Layer:
 			if not isinstance(layer ,Layer):
 				raise TypeError;
 			inputActivations = layer.getActivations();
-			self.activations = T.dot(inputActivations,self.weights).eval()+self.biases;
+			self.activations =  T.nnet.sigmoid(T.dot(inputActivations,self.weights)+self.biases).eval();
+			#self.activations =  calcActivationsFunc(inputActivations,self.weights,self.biases);
 		except:
 			logging.critical("error happened while calculating activations.")
 
@@ -96,5 +103,8 @@ class LayerTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-	#l1 = Layer(neurons=2,inputNeurons=0,sharedBias=False)
-    unittest.main()
+	il = Layer(neurons=1,inputNeurons=0)
+	l1 = Layer(neurons=2,inputNeurons=1)
+	ol = Layer(neurons=1,inputNeurons=2)
+	l1.calculateActivations(il)
+    #unittest.main()

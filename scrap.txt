@@ -1,0 +1,27 @@
+WARNING (theano.tensor.blas): Failed to import scipy.linalg.blas, and Theano flag blas.ldflags is empty. Falling back on slower implementations for dot(matrix, vector), dot(vector, matrix) and dot(vector, vector) (cannot import name 'NUMPY_MKL')
+
+il = Layer(neurons=1,inputNeurons=0)
+l1 = Layer(neurons=2,inputNeurons=1)
+ol = Layer(neurons=1,inputNeurons=2)
+
+iam = T.dmatrix('iam');
+wm = T.dmatrix('wm');
+bm = T.dmatrix('bm');
+am = T.nnet.sigmoid((T.dot(iam,wm))+bm);
+calcActivationsFunc = function([iam,wm,bm],am);
+
+iav = T.dvector('iav');
+wm = T.dmatrix('wv');
+bv = T.dvector('bv');
+av = T.nnet.sigmoid((T.dot(iav,wm))+bv);
+calcActivationsFunc = function([iav,wm,bv],av);
+
+ias = np.array([1,2])
+was = np.array([[1],[2]])
+bas = np.array([1,2])
+
+import theano
+import theano.tensor as T
+from theano import function
+import numpy as np
+import theano.printing as pp

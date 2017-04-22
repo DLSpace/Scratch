@@ -54,12 +54,15 @@ class Layer:
 	def randomizeWeightsandBiases(self):
 		#randomizing weights
 		if self.inputNeuronCount>0:
-			self.weights = self.sharedRandomStream.normal([self.inputNeuronCount,self.neuronCount]).eval().copy();
+			randWeights = self.sharedRandomStream.normal([self.inputNeuronCount,self.neuronCount]).eval().copy();
+			self.weights =  th.shared(value=randWeights,name='w');
 		if self.sharedBias:
 			logging.info("using shared bias.");
-			self.biases = self.sharedRandomStream.normal([1]).eval().copy();
+			randBiases = self.sharedRandomStream.normal([1]).eval().copy();
+			self.biases = th.shared(value=randBiases,name='b');
 		else:
-			self.biases = self.sharedRandomStream.normal([self.neuronCount]).eval().copy();
+			randBiases = self.sharedRandomStream.normal([self.neuronCount]).eval().copy();
+			self.biases = th.shared(value=randBiases,name='b');
 
 	def __init__(self, **kwargs):
 		self.initializeState(kwargs)
@@ -76,13 +79,23 @@ class Layer:
 			if not isinstance(layer ,Layer):
 				raise TypeError;
 			inputActivations = layer.getActivations();
-			self.activations =  T.nnet.sigmoid(T.dot(inputActivations,self.weights)+self.biases).eval();
+			self.activations =  T.nnet.sigmoid(T.dot(inputActivations,self.weights)+self.biases);
 			#self.activations =  calcActivationsFunc(inputActivations,self.weights,self.biases);
 		except:
 			logging.critical("error happened while calculating activations.")
 
 	def getActivations(self):
 		return self.activations;
+
+	def cost(self, expected):
+		return T.sqr(T.sub(self.activations, expected)).sum();
+
+	def sgd(self, expected):
+		gw = T.grad(cost=self.cost(expected),wrt=self.weights);
+		print(gw.eval())
+		gb = T.grad(cost=self.cost(expected),wrt=self.biases);
+		print(gb.eval())
+
 
 class LayerTest(unittest.TestCase):
 	def test_init(self):
@@ -103,8 +116,4 @@ class LayerTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-	il = Layer(neurons=1,inputNeurons=0)
-	l1 = Layer(neurons=2,inputNeurons=1)
-	ol = Layer(neurons=1,inputNeurons=2)
-	l1.calculateActivations(il)
-    #unittest.main()
+    unittest.main()

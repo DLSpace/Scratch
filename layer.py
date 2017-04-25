@@ -4,6 +4,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 from theano import function
 import time
+import math
 
 import unittest
 import logging
@@ -16,10 +17,11 @@ class Layer:
 	neuronCount = 2;
 	inputNeuronCount = 0;
 	sharedBias = False;
-	activations = [];	#activations for this layer
-	weights = [];
-	biases = [];
+	#activations = [];	#activations for this layer
+	#weights = None;
+	#biases = None;
 	sharedRandomStream = RandomStreams(seed=int(round(time.time())));
+	expected = T.fscalar('e');
 	#ia = T.dvector('ia');
 	#w = T.dmatrix('w');
 	#b = T.dvector('b');
@@ -49,13 +51,35 @@ class Layer:
 		if kwargs.get('sharedBias') is not None:
 			logging.info("Shared Bias is %s" % (kwargs['sharedBias']));
 			self.sharedBias = bool(kwargs['sharedBias']);
-
+		if kwargs.get('inputLayer') is not None:
+			logging.info("input layer is %s" % (kwargs['inputLayer']));
+			self.inputLayer = kwargs['inputLayer'];
+		if kwargs.get('name') is not None:
+			logging.info("name is %s" % (kwargs['name']));
+			self.name = kwargs['name'];
 
 	def randomizeWeightsandBiases(self):
+		"""
+			n = neurons
+			in = input layer neuron count
+			a = [1 X n] row matrix
+			w = [in X n] 2D matrix where weights from one input neron to next layer are in the column
+			and weights from all input neurons are in a row
+			--
+			|  l
+			| w
+			|  jk
+			--
+			J is in current layer so the weight arrow is going from k --> j
+			b = [1 X n] row matrix
+
+		"""
+		logging.info("name : " + self.name)
 		#randomizing weights
 		if self.inputNeuronCount>0:
-			randWeights = self.sharedRandomStream.normal([self.inputNeuronCount,self.neuronCount]).eval().copy();
-			self.weights =  th.shared(value=randWeights,name='w');
+			#randWeights = self.sharedRandomStream.normal([self.inputNeuronCount,self.neuronCount]).eval().copy();
+			self.weights =  th.shared(value=(self.sharedRandomStream.normal([self.inputNeuronCount,self.neuronCount]).eval().copy()),name='w');
+			logging.info("weights intialized")
 		if self.sharedBias:
 			logging.info("using shared bias.");
 			randBiases = self.sharedRandomStream.normal([1]).eval().copy();
@@ -63,38 +87,37 @@ class Layer:
 		else:
 			randBiases = self.sharedRandomStream.normal([self.neuronCount]).eval().copy();
 			self.biases = th.shared(value=randBiases,name='b');
+		logging.info("biases intialized")
 
 	def __init__(self, **kwargs):
 		self.initializeState(kwargs)
 		self.randomizeWeightsandBiases()
+		self.calculateActivations()
 		return
 
-	def getNeuronCount(self):
-		return self.neuronCount;
-
-	def calculateActivations(self, layer):
-		if self.inputNeuronCount==0:
-			raise Exception("This method is not supported for turminal layer")
-		try:
-			if not isinstance(layer ,Layer):
-				raise TypeError;
-			inputActivations = layer.getActivations();
-			self.activations =  T.nnet.sigmoid(T.dot(inputActivations,self.weights)+self.biases);
-			#self.activations =  calcActivationsFunc(inputActivations,self.weights,self.biases);
-		except:
-			logging.critical("error happened while calculating activations.")
-
-	def getActivations(self):
+	def calculateActivations(self):
+		if self.inputNeuronCount>0:
+			self.activations =  T.nnet.sigmoid(T.dot(self.inputLayer.calculateActivations(),self.weights)+self.biases);
 		return self.activations;
 
-	def cost(self, expected):
-		return T.sqr(T.sub(self.activations, expected)).sum();
+	def cost(self):
+		return T.sqr(T.sub(self.activations, self.expected)).sum();
 
-	def sgd(self, expected):
-		gw = T.grad(cost=self.cost(expected),wrt=self.weights);
-		print(gw.eval())
-		gb = T.grad(cost=self.cost(expected),wrt=self.biases);
-		print(gb.eval())
+	def sgd(self):
+		gw = T.grad(cost=self.cost(),wrt=self.weights);
+		gb = T.grad(cost=self.cost(),wrt=self.biases);
+		updates = [	(self.weights,self.weights - float(0.123) *  gw),
+					(self.biases,self.biases - float(0.123) * gb)
+			 ];
+		sgd_func = th.function(
+			inputs = [self.expected],
+			outputs = self.cost(),
+			updates = updates
+			#givens = {expected : exp}
+			);
+		#print(gw.eval())
+		#print(gb.eval())
+		return sgd_func
 
 
 class LayerTest(unittest.TestCase):

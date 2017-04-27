@@ -22,7 +22,7 @@ class Layer:
 	#biases = None;
 	sharedRandomStream = RandomStreams(seed=int(round(time.time())));
 	expected = T.fscalar('e');
-	learningRate = 0.003;
+	learningRate = 0.5;
 	#ia = T.dvector('ia');
 	#w = T.dmatrix('w');
 	#b = T.dvector('b');

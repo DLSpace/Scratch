@@ -66,6 +66,8 @@ if args.load:
 		l.learningRate = learningRate
 	il = net[0];
 	ol = net[len(net)-1];
+	layerCount = len(net)-2;#substract input and out put layers
+	layerNeuronCount = net[1].neuronCount;
 	dumpModel()
 else:
 	print('intializing model.')

@@ -1,3 +1,14 @@
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-l", "--load", help="load saved model",action="store_true")
+parser.add_argument("-s", "--noPlot", help="display cost plot",action="store_true")
+parser.add_argument("-p", "--patience", help="patience level",type=int)
+parser.add_argument("-n", "--neuronCount", help="number of neurons in a layer",type=int)
+parser.add_argument("-y", "--layerCount", help="number of layers in the net",type=int)
+parser.add_argument("-r", "--learningRate", help="learning rate for the layers",type=float)
+parser.add_argument("-f", "--fileName", help="model file name to load")
+args = parser.parse_args()
+
 import numpy as np
 import theano
 import theano.tensor as T
@@ -10,18 +21,9 @@ import math
 import sys
 import matplotlib.pyplot as plt
 import six.moves.cPickle as pickle
-import argparse
 import shutil
 from shutil import copyfile
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--load", help="load saved model",action="store_true")
-parser.add_argument("-s", "--noPlot", help="display cost plot",action="store_true")
-parser.add_argument("-p", "--patience", help="patience level",type=int)
-parser.add_argument("-n", "--neuronCount", help="number of neurons in a layer",type=int)
-parser.add_argument("-y", "--layerCount", help="number of layers in the net",type=int)
-parser.add_argument("-f", "--fileName", help="model file name to load")
-args = parser.parse_args()
 
 fileName = 'model.zip'
 if args.fileName is not None:
@@ -39,7 +41,9 @@ if args.neuronCount is not None:
 patienceThreshold = 25
 if args.patience is not None:
 	patienceThreshold = args.patience
-
+learningRate = 2.5
+if args.learningRate is not None:
+	learningRate = args.learningRate
 
 def dumpModel():
 	for l in net:
@@ -58,6 +62,8 @@ if args.load:
 	model = open(fileName,'rb');
 	net = pickle.load(model);
 	model.close()
+	for l in net:
+		l.learningRate = learningRate
 	il = net[0];
 	ol = net[len(net)-1];
 	dumpModel()
@@ -132,10 +138,9 @@ while(patience <= patienceThreshold):
 	counter = counter+1
 
 def saveModel():
-	model = open(fileName,'wb');
+	model = open('model-'+str(layerCount)+'-'+str(layerNeuronCount)+ '-'+str(avgCost)+'.zip','wb');
 	pickle.dump(net,model);
 	model.close()
-	copyfile(fileName,'model-'+str(layerCount)+'-'+str(layerNeuronCount)+ '-'+str(avgCost)+'.zip')
 
 #testing
 def predict(ang):

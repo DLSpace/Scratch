@@ -22,6 +22,7 @@ class Layer:
 	#biases = None;
 	sharedRandomStream = RandomStreams(seed=int(round(time.time())));
 	expected = T.fscalar('e');
+	learningRate = 0.003;
 	#ia = T.dvector('ia');
 	#w = T.dmatrix('w');
 	#b = T.dvector('b');
@@ -97,27 +98,28 @@ class Layer:
 
 	def calculateActivations(self):
 		if self.inputNeuronCount>0:
-			self.activations =  T.nnet.sigmoid(T.dot(self.inputLayer.calculateActivations(),self.weights)+self.biases);
+			self.activations =  T.nnet.sigmoid(T.dot(self.inputLayer.activations,self.weights)+self.biases);
 		return self.activations;
 
 	def cost(self):
 		return T.sqr(T.sub(self.activations, self.expected)).sum();
 
 	def sgd(self):
-		gw = T.grad(cost=self.cost(),wrt=self.weights);
-		gb = T.grad(cost=self.cost(),wrt=self.biases);
-		updates = [	(self.weights,self.weights - float(0.123) *  gw),
-					(self.biases,self.biases - float(0.123) * gb)
+		self.gw = T.grad(cost=self.cost(),wrt=self.weights);
+		self.gb = T.grad(cost=self.cost(),wrt=self.biases);
+		#TODO : parameterize learning rate
+		self.updates = [	(self.weights,self.weights - float(self.learningRate) *  self.gw),
+					(self.biases,self.biases - float(self.learningRate) * self.gb)
 			 ];
-		sgd_func = th.function(
+		self.sgd_func = th.function(
 			inputs = [self.expected],
 			outputs = self.cost(),
-			updates = updates
+			updates = self.updates
 			#givens = {expected : exp}
 			);
 		#print(gw.eval())
 		#print(gb.eval())
-		return sgd_func
+		return self.sgd_func
 
 
 class LayerTest(unittest.TestCase):

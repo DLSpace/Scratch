@@ -27,6 +27,9 @@
     </Compile>
     <Compile Include="ioManager.py" />
     <Compile Include="layer.py" />
+    <Compile Include="net.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Scratch.py" />
   </ItemGroup>
   <PropertyGroup>

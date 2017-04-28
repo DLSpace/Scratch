@@ -1,6 +1,6 @@
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--load", help="load saved model",action="store_true")
+#parser.add_argument("-l", "--load", help="load saved model",action="store_true")
 parser.add_argument("-s", "--noPlot", help="display cost plot",action="store_true")
 parser.add_argument("-p", "--patience", help="patience level",type=int)
 parser.add_argument("-n", "--neuronCount", help="number of neurons in a layer",type=int)
@@ -72,7 +72,7 @@ def loadModel():
 	ol = net[len(net)-1];
 	layerCount = len(net)-2;#substract input and out put layers
 	layerNeuronCount = net[1].neuronCount;
-	dumpModel()
+	#dumpModel()
 
 def createModel():
 	global net,il,ol;
@@ -88,7 +88,7 @@ def createModel():
 
 def initialize():
 	global SGDS;
-	if args.load:
+	if args.fileName is not None:
 		loadModel()
 	else:
 		createModel()
@@ -102,7 +102,7 @@ def initialize():
 
 #training
 def trainModel():
-	global avgCost;
+	global avgCost, showPlot;
 	inputVals = np.arange(start=0,stop=90,step=2);
 	counter=0
 	curcost=[]
@@ -142,8 +142,8 @@ def trainModel():
 		counter = counter+1
 
 def saveModel():
-	model = open('model-'+str(layerCount)+'-'+str(layerNeuronCount)+ '-'+str(avgCost)+'.zip','wb');
-	pickle.dump(net,model);
+	model = open('model-L'+str(layerCount)+'-N'+str(layerNeuronCount)+'-R'+learningRate+'-P'+patienceThreshold+'-'+str(avgCost)+'.zip','wb');
+	pickle.dump(net,model,protocol=cPickle.HIGHEST_PROTOCOL);
 	model.close()
 
 #testing
@@ -155,7 +155,7 @@ def predict(ang):
 initialize();
 while True:
 	trainModel();
-	dumpModel()
+	#dumpModel()
 	saveModel()
 	learningRate = float(input('Learning rate : '));
 	for l in net:

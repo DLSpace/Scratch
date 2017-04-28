@@ -33,7 +33,7 @@ fileName = 'model.zip'
 if args.fileName is not None:
 	fileName = args.fileName
 showPlot = True;
-if args.noPlot is not None:
+if args.noPlot:
 	showPlot = False
 net = [];
 layerCount = 1;
@@ -106,6 +106,7 @@ def trainModel():
 	inputVals = np.arange(start=0,stop=90,step=2);
 	counter=0
 	curcost=[]
+	print('Plot flag ',showPlot);
 	if showPlot:
 		plt.ion()
 		fig, ax = plt.subplots()
@@ -142,8 +143,8 @@ def trainModel():
 		counter = counter+1
 
 def saveModel():
-	model = open('model-L'+str(layerCount)+'-N'+str(layerNeuronCount)+'-R'+learningRate+'-P'+patienceThreshold+'-'+str(avgCost)+'.zip','wb');
-	pickle.dump(net,model,protocol=cPickle.HIGHEST_PROTOCOL);
+	model = open('model-L'+str(layerCount)+'-N'+str(layerNeuronCount)+'-R'+str(learningRate)+'-P'+str(patienceThreshold)+'-'+str(avgCost)+'.zip','wb');
+	pickle.dump(net,model,protocol=pickle.HIGHEST_PROTOCOL);
 	model.close()
 
 #testing

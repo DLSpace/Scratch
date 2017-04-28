@@ -19,15 +19,17 @@ import six.moves.cPickle as pickle
 fileName = args.fileName
 
 def dumpModel():
+	print('-------------------------------');
+	print('Layers : ', len(net)-2);
+	print('learning rate : ', net[1].learningRate);
 	for l in net:
-		print('-------------------------------');
 		if hasattr(l,'name'):
 			print('Layer name ',l.name)
 		if hasattr(l,'weights'):
 			print(l.weights.eval())
 		if hasattr(l,'biases'):
 			print(l.biases.eval())
-		print('-------------------------------');
+	print('-------------------------------');
 
 
 print('loading existing model.')	

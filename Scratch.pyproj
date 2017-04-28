@@ -25,12 +25,19 @@
     <Compile Include="calc.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cmdLine.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ioManager.py" />
     <Compile Include="layer.py" />
     <Compile Include="net.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Scratch.py" />
+    <Compile Include="testModel.py" />
+    <Compile Include="viewModel.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

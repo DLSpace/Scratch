@@ -24,6 +24,10 @@ import six.moves.cPickle as pickle
 import shutil
 from shutil import copyfile
 
+il = None;
+ol = None;
+avgCost = None;
+SGDS = [];
 
 fileName = 'model.zip'
 if args.fileName is not None:
@@ -56,8 +60,8 @@ def dumpModel():
 			print(l.biases.eval())
 		print('-------------------------------');
 
-
-if args.load:
+def loadModel():
+	global net,il,ol;
 	print('loading existing model.')	
 	model = open(fileName,'rb');
 	net = pickle.load(model);
@@ -69,7 +73,9 @@ if args.load:
 	layerCount = len(net)-2;#substract input and out put layers
 	layerNeuronCount = net[1].neuronCount;
 	dumpModel()
-else:
+
+def createModel():
+	global net,il,ol;
 	print('intializing model.')
 	il = Layer(neurons=1,inputNeurons=0,name='il');
 	net.extend([il]);
@@ -80,64 +86,60 @@ else:
 	ol = Layer(neurons=1,inputNeurons=net[-1].neuronCount,inputLayer = net[-1],name='ol');
 	net.extend([ol]);
 
-#l2 = Layer(neurons=10,inputNeurons=10,inputLayer = l1,name='l2');
-
-
-il.activations = theano.shared(value=np.array([np.float32(0)]),name='a',allow_downcast=True);
-for l in net:
-	l.calculateActivations()
-#il.calculateActivations();
-#l1.calculateActivations();
-#l2.calculateActivations();
-#ol.calculateActivations();
-
-SGDS = []
-for l in net:
-	if hasattr(l,'weights'):
-		SGDS.extend([l.sgd()])
-#l1SGD = l1.sgd();
-#l2SGD = l2.sgd();
-#olSGD = ol.sgd();
-
+def initialize():
+	global SGDS;
+	if args.load:
+		loadModel()
+	else:
+		createModel()
+	#compute expressions
+	il.activations = theano.shared(value=np.array([np.float32(0)]),name='a',allow_downcast=True);
+	for l in net:
+		l.calculateActivations()
+	for l in net:
+		if hasattr(l,'weights'):
+			SGDS.extend([l.sgd()])
 
 #training
-inputVals = np.arange(start=0,stop=90,step=2);
-counter=0
-curcost=[]
-if showPlot:
-	plt.ion()
-	fig, ax = plt.subplots()
-	plt.ylabel('cost');
-	plt.show();
-	ax.set_ylim([0,1]);
-	ax.set_xlim([0,25]);
-	plt.autoscale(enable=True,axis='both');
-prvCost = 0.9;
-patience = 0;
-while(patience <= patienceThreshold):
-	for ang in inputVals:
-		rads = np.float32(math.radians(ang));
-		expected = np.float32(math.sin(rads));
-		net[0].activations.set_value(np.array([rads]));
-		curcost.extend([SGDS[-1](expected).tolist()])
-		for i in range(-1, -len(net),-1):#skips output layer at zero index
-			SGDS[i](np.float32(net[i].activations.eval().mean()))
-		#l2SGD(np.float32(ol.activations.eval().mean()));
-		#l1SGD(np.float32(l2.activations.eval().mean()));
-	avgCost = (sum(curcost)/len(curcost));
-	prctCost = (((prvCost - avgCost)/avgCost)*100);
-	print(avgCost, '  change% :' ,prctCost, 'patience : ' , patience);
-	prvCost = avgCost
+def trainModel():
+	global avgCost;
+	inputVals = np.arange(start=0,stop=90,step=2);
+	counter=0
+	curcost=[]
 	if showPlot:
-		ax.plot(counter,avgCost,'.');
-		plt.pause(0.0001);
-		plt.draw();
-	if prctCost<=0.001 :
-		patience = patience + 1
-	else:
-		patience = 0;	
-	curcost.clear();
-	counter = counter+1
+		plt.ion()
+		fig, ax = plt.subplots()
+		plt.ylabel('cost');
+		plt.show();
+		ax.set_ylim([0,1]);
+		ax.set_xlim([0,25]);
+		plt.autoscale(enable=True,axis='both');
+	prvCost = 0.9;
+	patience = 0;
+	while(patience <= patienceThreshold):
+		for ang in inputVals:
+			rads = np.float32(math.radians(ang));
+			expected = np.float32(math.sin(rads));
+			net[0].activations.set_value(np.array([rads]));
+			curcost.extend([SGDS[-1](expected).tolist()])
+			for i in range(-1, -len(net),-1):#skips output layer at zero index
+				SGDS[i](np.float32(net[i].activations.eval().mean()))
+			#l2SGD(np.float32(ol.activations.eval().mean()));
+			#l1SGD(np.float32(l2.activations.eval().mean()));
+		avgCost = (sum(curcost)/len(curcost));
+		prctCost = (((prvCost - avgCost)/avgCost)*100);
+		print(avgCost, '  change% :' ,prctCost, 'patience : ' , patience);
+		prvCost = avgCost
+		if showPlot:
+			ax.plot(counter,avgCost,'.');
+			plt.pause(0.0001);
+			plt.draw();
+		if prctCost<=0.001 :
+			patience = patience + 1
+		else:
+			patience = 0;	
+		curcost.clear();
+		counter = counter+1
 
 def saveModel():
 	model = open('model-'+str(layerCount)+'-'+str(layerNeuronCount)+ '-'+str(avgCost)+'.zip','wb');
@@ -150,18 +152,13 @@ def predict(ang):
 	il.activations.set_value(np.array([np.float32(rads)]));
 	print('ANN : ',ol.activations.eval(), ' sin : ', math.sin(rads));
 
-inputVals = np.arange(start=91,stop=180,step=10);
-print('-----------predictions-------------')
-for ang in inputVals:
-	predict(ang);
-print('-----------------------------------')
-dumpModel()
-saveModel()
-
-input('Press enter to quit.')
-#ang = int(input('Angle : '));
-#while(ang>=0):
-#	predict(ang);
-#	ang = int(input('Angle : '));
-
+initialize();
+while True:
+	trainModel();
+	dumpModel()
+	saveModel()
+	learningRate = float(input('Learning rate : '));
+	for l in net:
+		l.learningRate = learningRate
+	patienceThreshold = int(input('Patience : '));
 

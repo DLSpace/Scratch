@@ -103,7 +103,7 @@ def initialize():
 #training
 def trainModel():
 	global avgCost, showPlot;
-	inputVals = np.arange(start=0,stop=90,step=2);
+	inputVals = np.arange(start=0,stop=270,step=2);
 	counter=0
 	curcost=[]
 	print('Plot flag ',showPlot);

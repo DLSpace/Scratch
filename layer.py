@@ -12,22 +12,9 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 
-class Layer:
+class Layer(object):
 	"""Class that defines a layer in the nnet"""
-	neuronCount = 2;
-	inputNeuronCount = 0;
-	sharedBias = False;
-	#activations = [];	#activations for this layer
-	#weights = None;
-	#biases = None;
-	sharedRandomStream = RandomStreams(seed=int(round(time.time())));
-	expected = T.fscalar('e');
-	learningRate = 2.5;
-	#ia = T.dvector('ia');
-	#w = T.dmatrix('w');
-	#b = T.dvector('b');
-	#a = T.nnet.sigmoid((T.dot(ia,w))+b);
-	#calcActivationsFunc = function([ia,w,b],a);
+	
 
 	def initializeState(self, kwargs):
 		"""
@@ -91,6 +78,12 @@ class Layer:
 		logging.info("biases intialized")
 
 	def __init__(self, **kwargs):
+		self.neuronCount = 2;
+		self.inputNeuronCount = 0;
+		self.sharedBias = False;
+		self.sharedRandomStream = RandomStreams(seed=int(round(time.time())));
+		self.expected = T.fscalar('e');
+		self.learningRate = 2.5;
 		self.initializeState(kwargs)
 		self.randomizeWeightsandBiases()
 		self.calculateActivations()

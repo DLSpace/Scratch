@@ -153,11 +153,16 @@ def predict(ang):
 	il.activations.set_value(np.array([np.float32(rads)]));
 	print('ANN : ',ol.activations.eval(), ' sin : ', math.sin(rads));
 
+
+
+
 initialize();
 while True:
 	trainModel();
 	#dumpModel()
 	saveModel()
+	displayMenu()
+
 	learningRate = float(input('Learning rate : '));
 	for l in net:
 		l.learningRate = learningRate

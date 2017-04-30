@@ -41,10 +41,11 @@ class Net(object):
 		print('loading existing model from ',fileName)	
 		model = open(fileName,'rb');
 		ANN = pickle.load(model);
-		model.close()
-		return ANN
-		
-
+		model.close();
+		ANNClone = Net();
+		ANNClone.copy(ANN);
+		ANNClone.computeExpressions();
+		return ANNClone;
 
 	def computeExpressions(self):
 		#compute expressions
@@ -56,15 +57,19 @@ class Net(object):
 				self.SGDS.extend([l.sgd()])
 
 	def printNet(self):
+		print('-------------------------------');
+		print('Cost \t: ', self.avgCost);
+		print('Layer \t: ', self.layerCount);
+		print('Neurons \t: ', self.layerNeuronCount);
+		print('Patience \t: ', self.patienceThreshold);
 		for l in self.net:
-			print('-------------------------------');
 			if hasattr(l,'name'):
 				print('Layer name ',l.name)
 			if hasattr(l,'weights'):
 				print(l.weights.eval())
 			if hasattr(l,'biases'):
 				print(l.biases.eval())
-			print('-------------------------------');
+		print('-------------------------------');
 
 	def createNet(self,layerCount,layerNeuronCount):
 		self.layerCount = layerCount;
@@ -96,7 +101,7 @@ class Net(object):
 		return self.net[0];
 
 	def getOutputLayer(self):
-		return self.net[len(net)-1];
+		return self.net[len(self.net)-1];
 
 	def train(self,inputVals):
 		counter=0
@@ -107,16 +112,18 @@ class Net(object):
 			plt.ylabel('cost');
 			plt.show();
 			plt.autoscale(enable=True,axis='both');
-		prvCost = 0.9;
+		prvCost = 0.0;
 		patience = 0;
 		while(patience <= self.patienceThreshold):
 			for ang in inputVals:
 				rads = np.float32(math.radians(ang));
 				expected = np.float32(math.sin(rads));
 				self.getInputLayer().activations.set_value(np.array([rads]));
-				curcost.extend([self.SGDS[-1](expected).tolist()])
+				#########back propogation##########
+				curcost.extend([self.SGDS[-1](expected).tolist()]);
 				for i in range(-1, -len(self.net),-1):#skips output layer at zero index
 					self.SGDS[i](np.float32(self.net[i].activations.eval().mean()))
+				###################################
 			self.avgCost = (sum(curcost)/len(curcost));
 			prctCost = (((prvCost - self.avgCost)/self.avgCost)*100);
 			print(self.avgCost, '  change% :' ,prctCost, 'patience : ' , patience);
@@ -125,9 +132,14 @@ class Net(object):
 				ax.plot(counter,self.avgCost,'.');
 				plt.pause(0.0001);
 				plt.draw();
-			if prctCost<=0.001 :
+			if prctCost<=0.0001 :
 				patience = patience + 1
 			else:
 				patience = 0;	
 			curcost.clear();
 			counter = counter+1
+
+	def predict(self,ang):
+		rads = math.radians(ang);
+		self.getInputLayer().activations.set_value(np.array([np.float32(rads)]));
+		return self.getOutputLayer().activations.eval()[0];

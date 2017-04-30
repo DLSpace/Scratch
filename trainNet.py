@@ -33,9 +33,9 @@ fileName = 'model.zip'
 if args.fileName is not None:
 	fileName = args.fileName
 
-showPlot = True;
+ANN.showPlot = True;
 if args.noPlot:
-	showPlot = False
+	ANN.showPlot = False
 
 layerCount = 1;
 if args.layerCount is not None:
@@ -55,12 +55,10 @@ if args.learningRate is not None:
 
 
 def loadModel():
-	global ANN,learningRate,layerCount,layerNeuronCount;
+	global ANN,learningRate,layerCount,layerNeuronCount, patienceThreshold;
 	ANN = Net.loadModel(fileName)
-	ANN.printNet()
+	ANN.patienceThreshold = patienceThreshold;
 	ANN.setLearningRate(learningRate);
-	layerCount = ANN.layerCount;#substract input and out put layers
-	layerNeuronCount = ANN.layerNeuronCount;
 
 def initialize():
 	global ANN,layerCount,layerNeuronCount;
@@ -68,7 +66,7 @@ def initialize():
 		loadModel()
 	else:
 		ANN.createNet(layerCount,layerNeuronCount);
-	ANN.computeExpressions();
+	ANN.setLearningRate(learningRate);
 
 #testing
 def predict(ang):
@@ -77,14 +75,39 @@ def predict(ang):
 	print('ANN : ',ANN.getOutputLayer().activations.eval(), ' sin : ', math.sin(rads));
 
 
+def displayMenu():
+	global ANN
+	print('')
+	print('========================================================')
+	print('\t1.Train')
+	print('\t2.Test')
+	print('\t3.View')
+	print('\t4.Turn Plot', str(not ANN.showPlot));
+	print('\t5.Exit')
+	print('')
+	choice = int(input('Choice : '))
+	if choice == 1: # Train
+		inputVals = np.arange(start=0,stop=270,step=2);
+		learningRate = float(input('Learning rate : '));
+		ANN.setLearningRate(learningRate);
+		ANN.patienceThreshold = int(input('Patience : '));
+		ANN.train(inputVals);
+		ANN.saveModel();
+	if choice == 2: #Test
+		start = int(input('Start angle : '));
+		end = int(input('End angle : '));
+		for ang in range(start,end,1):
+			print(ANN.predict(ang), ',', math.sin(math.radians(ang)));
+	if choice == 3: #view model
+		ANN.printNet();
+	if choice ==4:
+		ANN.showPlot = not ANN.showPlot;
+	if choice == 5: #exit
+		exit(0);
+
+
 initialize();
-inputVals = np.arange(start=0,stop=270,step=2);
 while True:
-	ANN.train(inputVals);
-	#dumpModel()
-	ANN.saveModel()
-	learningRate = float(input('Learning rate : '));
-	ANN.setLearningRate(learningRate);
-	ANN.patienceThreshold = int(input('Patience : '));
+	displayMenu()
 
 

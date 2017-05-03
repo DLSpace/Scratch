@@ -34,11 +34,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Scratch.py" />
-    <Compile Include="testModel.py" />
     <Compile Include="trainNet.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="viewModel.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -55,10 +55,28 @@ if args.learningRate is not None:
 
 
 def loadModel():
-	global ANN,learningRate,layerCount,layerNeuronCount, patienceThreshold;
+	global ANN,learningRate, patienceThreshold;
 	ANN = Net.loadModel(fileName)
 	ANN.patienceThreshold = patienceThreshold;
 	ANN.setLearningRate(learningRate);
+	#ANN.computeExpressions();
+
+def combineNets(fileName):
+	global ANN,learningRate, patienceThreshold;
+	tempANN = Net.loadModel(fileName);
+	ol = ANN.net.pop();
+	tempANN.net.pop();
+	tempANN.net.remove(tempANN.getInputLayer());
+	ANN.net.extend(tempANN.net);
+	ANN.net.extend([ol]);
+	ANN.layerCount = len(ANN.net)-2;
+	#adjust layer names
+	for i in range(1,len(ANN.net)-1):
+		ANN.net[i].name = 'l'+str(i);
+	ANN.patienceThreshold = patienceThreshold;
+	ANN.setLearningRate(learningRate);
+	
+
 
 def initialize():
 	global ANN,layerCount,layerNeuronCount;
@@ -76,22 +94,24 @@ def predict(ang):
 
 
 def displayMenu():
-	global ANN
+	global ANN,fileName
 	print('')
 	print('========================================================')
 	print('\t1.Train')
 	print('\t2.Test')
 	print('\t3.View')
 	print('\t4.Turn Plot', str(not ANN.showPlot));
-	print('\t5.Exit')
+	print('\t5.Revert')
+	print('\t6.Load file')
+	print('\t7.Combine nets')
+	print('\t8.Exit')
 	print('')
 	choice = int(input('Choice : '))
 	if choice == 1: # Train
-		inputVals = np.arange(start=0,stop=270,step=2);
 		learningRate = float(input('Learning rate : '));
 		ANN.setLearningRate(learningRate);
 		ANN.patienceThreshold = int(input('Patience : '));
-		ANN.train(inputVals);
+		ANN.train();
 		ANN.saveModel();
 	if choice == 2: #Test
 		start = int(input('Start angle : '));
@@ -102,12 +122,24 @@ def displayMenu():
 		ANN.printNet();
 	if choice ==4:
 		ANN.showPlot = not ANN.showPlot;
-	if choice == 5: #exit
+	if choice ==5:
+		initialize();
+	if choice ==6:
+		fileName = input('Enter file name : ')
+		args.fileName = fileName;
+		initialize();
+	if choice == 7 :
+		fileName = input('Enter file name : ')
+		combineNets(fileName);
+	if choice == 8: #exit
 		exit(0);
 
 
 initialize();
 while True:
-	displayMenu()
+	try:
+		displayMenu()
+	except KeyboardInterrupt:
+		print('.............user interrupt');
 
 

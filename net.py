@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import six.moves.cPickle as pickle
 import shutil
 from shutil import copyfile
-import six.moves.cPickle as pickle
+import os, os.path
+import glob;
 
 class Net(object):
 
@@ -44,7 +45,7 @@ class Net(object):
 		model.close();
 		ANNClone = Net();
 		ANNClone.copy(ANN);
-		ANNClone.computeExpressions();
+		#ANNClone.computeExpressions();
 		return ANNClone;
 
 	def computeExpressions(self):
@@ -88,14 +89,36 @@ class Net(object):
 		self.net.extend([ol]);
 		self.computeExpressions();
 
+	def __makeFileName(self):
+		return 'model-L'+str(self.layerCount)+'-N'+str(self.layerNeuronCount)+'-R'+str(self.net[0].learningRate)+'-P'+str(self.patienceThreshold)+'-'+str(self.avgCost);
+	
 	def saveModel(self):
-		model = open('model-L'+str(self.layerCount)+'-N'+str(self.layerNeuronCount)+'-R'+str(self.net[0].learningRate)+'-P'+str(self.patienceThreshold)+'-'+str(self.avgCost)+'.zip','wb');
+		fileName = self.__makeFileName() +'.zip';
+		self.__saveModel(fileName);
+
+	def __saveModel(self,fileName):
+		model = open(fileName,'wb');
 		pickle.dump(self,model,pickle.HIGHEST_PROTOCOL);
 		model.close()
+
+	def __saveTemp(self):
+		fileName = self.__makeFileName()+'.zip';
+		if(not hasattr(self,'tempDir')):
+			self.tempDir = self.__makeFileName() + '_temp';
+		if(not os.path.exists(self.tempDir)):
+			os.mkdir(self.tempDir);
+		self.__saveModel(self.tempDir+'\\'+ fileName);
+		#clean up
+		files = glob.glob(self.tempDir+'\\*.zip')
+		files.sort(key=os.path.getctime);
+		if len(files) > 10 :
+			for i in range(0,10):
+				os.remove(files[i])
 
 	def setLearningRate(self,learningRate):
 		for l in self.net:
 			l.learningRate = learningRate;
+		self.computeExpressions()
 
 	def getInputLayer(self):
 		return self.net[0];
@@ -103,7 +126,7 @@ class Net(object):
 	def getOutputLayer(self):
 		return self.net[len(self.net)-1];
 
-	def train(self,inputVals):
+	def train(self):
 		counter=0
 		curcost=[]
 		if self.showPlot:
@@ -114,6 +137,7 @@ class Net(object):
 			plt.autoscale(enable=True,axis='both');
 		prvCost = 0.0;
 		patience = 0;
+		inputVals = np.arange(start=0,stop=270,step=2);
 		while(patience <= self.patienceThreshold):
 			for ang in inputVals:
 				rads = np.float32(math.radians(ang));
@@ -138,6 +162,8 @@ class Net(object):
 				patience = 0;	
 			curcost.clear();
 			counter = counter+1
+			if (counter % 10000)==0 :
+				self.__saveTemp()
 
 	def predict(self,ang):
 		rads = math.radians(ang);

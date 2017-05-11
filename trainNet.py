@@ -28,10 +28,12 @@ from net import Net
 
 
 ANN = Net();
+saves = [];
 
 fileName = 'model.zip'
 if args.fileName is not None:
-	fileName = args.fileName
+	fileName = args.fileName;
+	saves.extend([fileName]);
 
 ANN.showPlot = True;
 if args.noPlot:
@@ -55,7 +57,7 @@ if args.learningRate is not None:
 
 
 def loadModel():
-	global ANN,learningRate, patienceThreshold;
+	global ANN,learningRate, patienceThreshold, fileName;
 	ANN = Net.loadModel(fileName)
 	ANN.patienceThreshold = patienceThreshold;
 	ANN.setLearningRate(learningRate);
@@ -94,17 +96,19 @@ def predict(ang):
 
 
 def displayMenu():
-	global ANN,fileName
+	global ANN,fileName, saves
 	print('')
 	print('========================================================')
+	print(saves);
 	print('\t1.Train')
 	print('\t2.Test')
 	print('\t3.View')
 	print('\t4.Turn Plot', str(not ANN.showPlot));
 	print('\t5.Revert')
 	print('\t6.Load file')
-	print('\t7.Combine nets')
-	print('\t8.Exit')
+	print('\t7.Save file')
+	print('\t8.Combine nets')
+	print('\t9.Exit')
 	print('')
 	choice = int(input('Choice : '))
 	if choice == 1: # Train
@@ -112,26 +116,42 @@ def displayMenu():
 		ANN.setLearningRate(learningRate);
 		ANN.patienceThreshold = int(input('Patience : '));
 		ANN.train();
-		ANN.saveModel();
+		saves.extend([ ANN.saveModel()]);
+		args.fileName = saves[-1];
 	if choice == 2: #Test
 		start = int(input('Start angle : '));
 		end = int(input('End angle : '));
+		plt.ion()
+		fig, ax = plt.subplots()
+		plt.ylabel('Predict');
+		plt.show();
+		plt.autoscale(enable=True,axis='both');
 		for ang in range(start,end,1):
-			print(ANN.predict(ang), ',', math.sin(math.radians(ang)));
+			prediction = ANN.predict(ang);
+			actualValue = math.sin(math.radians(ang));
+			print(prediction, ',', actualValue);
+			ax.plot(ang,prediction,'b,');
+			ax.plot(ang,actualValue,'r,');
+			plt.pause(0.0001);
+			plt.draw();
 	if choice == 3: #view model
 		ANN.printNet();
 	if choice ==4:
 		ANN.showPlot = not ANN.showPlot;
-	if choice ==5:
+	if choice ==5:#revert
+		if len(saves)>0:
+			fileName = saves.pop();
 		initialize();
 	if choice ==6:
 		fileName = input('Enter file name : ')
 		args.fileName = fileName;
 		initialize();
-	if choice == 7 :
+	if choice ==7:
+		ANN.saveModel();
+	if choice == 8 :
 		fileName = input('Enter file name : ')
 		combineNets(fileName);
-	if choice == 8: #exit
+	if choice == 9: #exit
 		exit(0);
 
 

@@ -59,7 +59,7 @@ class Net(object):
 
 	def printNet(self):
 		print('-------------------------------');
-		print('Cost \t: ', self.avgCost);
+		print('AVG Cost \t: ', self.avgCost);
 		print('Layer \t: ', self.layerCount);
 		print('Neurons \t: ', self.layerNeuronCount);
 		print('Patience \t: ', self.patienceThreshold);
@@ -67,8 +67,10 @@ class Net(object):
 			if hasattr(l,'name'):
 				print('Layer name ',l.name)
 			if hasattr(l,'weights'):
+				print('Weights :-')
 				print(l.weights.eval())
 			if hasattr(l,'biases'):
+				print('Biases :-')
 				print(l.biases.eval())
 		print('-------------------------------');
 
@@ -95,6 +97,7 @@ class Net(object):
 	def saveModel(self):
 		fileName = self.__makeFileName() +'.zip';
 		self.__saveModel(fileName);
+		return fileName;
 
 	def __saveModel(self,fileName):
 		model = open(fileName,'wb');
@@ -120,6 +123,9 @@ class Net(object):
 			l.learningRate = learningRate;
 		self.computeExpressions()
 
+	def getLearningRate(self):
+		return self.net[0].learningRate;
+
 	def getInputLayer(self):
 		return self.net[0];
 
@@ -127,7 +133,7 @@ class Net(object):
 		return self.net[len(self.net)-1];
 
 	def train(self):
-		counter=0
+		epoch=0
 		curcost=[]
 		if self.showPlot:
 			plt.ion()
@@ -137,33 +143,43 @@ class Net(object):
 			plt.autoscale(enable=True,axis='both');
 		prvCost = 0.0;
 		patience = 0;
-		inputVals = np.arange(start=0,stop=270,step=2);
+		inputValsArray = [np.arange(start=0,stop=135,step=2),
+					#np.arange(start=46,stop=90,step=2),
+			   #np.arange(start=91,stop=135,step=2)
+			   ];
 		while(patience <= self.patienceThreshold):
-			for ang in inputVals:
-				rads = np.float32(math.radians(ang));
-				expected = np.float32(math.sin(rads));
-				self.getInputLayer().activations.set_value(np.array([rads]));
-				#########back propogation##########
-				curcost.extend([self.SGDS[-1](expected).tolist()]);
-				for i in range(-1, -len(self.net),-1):#skips output layer at zero index
-					self.SGDS[i](np.float32(self.net[i].activations.eval().mean()))
-				###################################
-			self.avgCost = (sum(curcost)/len(curcost));
-			prctCost = (((prvCost - self.avgCost)/self.avgCost)*100);
-			print(self.avgCost, '  change% :' ,prctCost, 'patience : ' , patience);
-			prvCost = self.avgCost
-			if self.showPlot:
-				ax.plot(counter,self.avgCost,'.');
-				plt.pause(0.0001);
-				plt.draw();
-			if prctCost<=0.0001 :
-				patience = patience + 1
-			else:
-				patience = 0;	
-			curcost.clear();
-			counter = counter+1
-			if (counter % 10000)==0 :
-				self.__saveTemp()
+			for inputVals in inputValsArray:
+				np.random.shuffle(inputVals);
+				for ang in inputVals:
+					rads = np.float32(math.radians(ang));
+					expected = np.float32(math.sin(rads));
+					self.getInputLayer().activations.set_value(np.array([rads]));
+					#########back propogation##########
+					curcost.extend([self.SGDS[-1](expected).tolist()]);
+					for i in range(-1, -len(self.net),-1):#skips output layer at zero index
+						self.SGDS[i](expected)
+						#self.SGDS[i](np.float32(self.net[i].activations.eval().mean()))
+					###################################
+				self.avgCost = (sum(curcost)/len(curcost));
+				prctCost = (((prvCost - self.avgCost)/self.avgCost)*100);
+				print(self.avgCost,' epoch : ', epoch , '  learning rate: ', self.getLearningRate(),'  change% :' ,prctCost, 'patience : ' , patience);
+				prvCost = self.avgCost
+				if self.showPlot:
+					ax.plot(epoch,self.avgCost,'.');
+					plt.pause(0.0001);
+					plt.draw();
+				if prctCost<=0.0001 :
+					#as the learning rate decays adjust the learning rate down for fine tuning
+					if prctCost<=0 :
+						self.setLearningRate(self.getLearningRate()/(1+epoch*0.001));
+					#	patience = patience *10;
+					patience = patience + 1
+				else:
+					patience = 0;	
+				curcost.clear();
+				epoch = epoch+1
+				if (epoch % 500)==0 :
+					self.__saveTemp()
 
 	def predict(self,ang):
 		rads = math.radians(ang);

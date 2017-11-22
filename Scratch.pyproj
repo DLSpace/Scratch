@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>57535875-1420-4177-b941-b89873be085f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>layer.py</StartupFile>
+    <StartupFile>kerashw.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -29,6 +29,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ioManager.py" />
+    <Compile Include="kerashw.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="layer.py" />
     <Compile Include="net.py">
       <SubType>Code</SubType>

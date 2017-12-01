@@ -91,11 +91,14 @@ class Layer(object):
 
 	def calculateActivations(self):
 		if self.inputNeuronCount>0:
+			"""
+				T.dot(a,b) is sum product of last access of a and 2nd to last access of b
+			"""
 			self.activations =  T.nnet.sigmoid(T.dot(self.inputLayer.activations,self.weights)+self.biases);
 		return self.activations;
 
 	def cost(self):
-		return T.sqr(T.sub(self.activations, self.expected)).sum();
+		return ((T.sqr(T.sub(self.activations, self.expected)).sum())/self.neuronCount);
 
 	def sgd(self):
 		self.gw = T.grad(cost=self.cost(),wrt=self.weights);

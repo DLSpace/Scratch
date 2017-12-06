@@ -1,8 +1,0 @@
-{
-    "python.linting.pylintEnabled": false,
-        "terminal.integrated.shellArgs.windows": [
-        "/K",
-        "c:\\tools\\env.bat"
-    ],
-    "editor.minimap.enabled": false
-}

@@ -39,7 +39,7 @@ labels = np.array([[0],
                 [1]])
 print(labels)
 # Train the model, iterating on the data in batches of 32 samples
-model.fit(data, labels, epochs=10, batch_size=10)
+model.fit(data, labels, epochs=1000, batch_size=10)
 
 pred = model.predict([
     [0.034906585],

@@ -110,9 +110,9 @@ class Net(object):
 			self.tempDir = self.__makeFileName() + '_temp';
 		if(not os.path.exists(self.tempDir)):
 			os.mkdir(self.tempDir);
-		self.__saveModel(self.tempDir+'\\'+ fileName);
+		self.__saveModel(os.path.join(self.tempDir+os.path.sep+ fileName);
 		#clean up
-		files = glob.glob(self.tempDir+'\\*.zip')
+		files = glob.glob(self.tempDir+os.path.sep+'*.zip')
 		files.sort(key=os.path.getctime);
 		if len(files) > 10 :
 			for i in range(0,10):

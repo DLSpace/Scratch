@@ -145,7 +145,7 @@ class Net(object):
 		prvCost = 0.0;
 		patience = 0;
 		inputValsArray = [np.arange(start=0,stop=45,step=2),
-						  np.arange(start=46,stop=90,step=2),
+						  #np.arange(start=46,stop=90,step=2),
 			   			  #np.arange(start=91,stop=135,step=2)
 			   ];
 		while(patience <= self.patienceThreshold):
@@ -157,9 +157,8 @@ class Net(object):
 					self.getInputLayer().activations.set_value(np.array([rads]));
 					#########back propogation##########
 					curcost.extend([self.SGDS[-1](expected).tolist()]);
-					for i in range(-1, -len(self.net),-1):#skips output layer at zero index
+					for i in range(0, -len(self.net),-1):#skips output layer at zero index
 						self.SGDS[i](expected)
-						#self.SGDS[i](np.float32(self.net[i].activations.eval().mean()))
 					###################################
 				self.avgCost = (sum(curcost)/len(curcost));
 				prctCost = (((prvCost - self.avgCost)/self.avgCost)*100);

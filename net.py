@@ -135,17 +135,18 @@ class Net(object):
 	def train(self):
 		epoch=0
 		curcost=[]
+		fig, ax = plt.subplots()
+		plt.ylabel('cost');
+		plt.ioff()
 		if self.showPlot:
 			plt.ion()
-			fig, ax = plt.subplots()
-			plt.ylabel('cost');
-			plt.show();
 			plt.autoscale(enable=True,axis='both');
+			plt.show();
 		prvCost = 0.0;
 		patience = 0;
-		inputValsArray = [np.arange(start=0,stop=135,step=2),
-					#np.arange(start=46,stop=90,step=2),
-			   #np.arange(start=91,stop=135,step=2)
+		inputValsArray = [np.arange(start=0,stop=45,step=2),
+						  np.arange(start=46,stop=90,step=2),
+			   			  #np.arange(start=91,stop=135,step=2)
 			   ];
 		while(patience <= self.patienceThreshold):
 			for inputVals in inputValsArray:
@@ -170,9 +171,7 @@ class Net(object):
 					plt.draw();
 				if prctCost<=0.0001 :
 					#as the learning rate decays adjust the learning rate down for fine tuning
-					if prctCost<=0 :
-						self.setLearningRate(self.getLearningRate()/(1+epoch*0.001));
-					#	patience = patience *10;
+					self.setLearningRate(self.getLearningRate() - (self.getLearningRate() * 0.01));
 					patience = patience + 1
 				else:
 					patience = 0;	
@@ -180,6 +179,8 @@ class Net(object):
 				epoch = epoch+1
 				if (epoch % 500)==0 :
 					self.__saveTemp()
+		plt.savefig(self.__makeFileName() + ".png")
+		plt.close()
 
 	def predict(self,ang):
 		rads = math.radians(ang);

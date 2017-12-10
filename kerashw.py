@@ -4,21 +4,32 @@ from keras.layers import Dense, Activation
 
 
 model = Sequential()
-model.add(Dense(units=64, input_dim=100))
+model.add(Dense(units=64, input_dim=1))
 model.add(Activation('relu'))
-model.add(Dense(units=10))
+model.add(Dense(units=1))
 model.add(Activation('softmax'))
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='binary_crossentropy',
               optimizer='sgd',
               metrics=['accuracy'])
 
-x_train = np.array([0,0.523598776,0.785398163,1.047197551,1.570796327])
-y_train = np.array([0,0.5,0.707106781,0.866025404,1])
 
-model.fit(x_train, y_train, epochs=5, batch_size=32)
-loss_and_metrics = model.evaluate(x_test, y_test, batch_size=128)
-
-
-#classes = model.predict(x_test, batch_size=128)
+# Generate dummy data
+import numpy as np
+# data = np.random.random((1000, 1))
+data = np.array([[0],
+                [0.523598776],
+                [0.785398163],
+                [1.047197551],
+                [1.570796327]])
+print(data)
+# labels = np.random.randint(2, size=(5, 1))
+labels = np.array([[0],
+                [0.5],
+                [0.707106781],
+                [0.866025404],
+                [1]])
+print(labels)
+# Train the model, iterating on the data in batches of 32 samples
+model.fit(data, labels, epochs=10, batch_size=10)
 

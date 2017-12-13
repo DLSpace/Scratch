@@ -242,3 +242,4 @@ ModelManifest.xml
 .fake/
 /__pycache__
 *.zip
+.vscode/settings.json

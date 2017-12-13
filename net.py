@@ -110,9 +110,9 @@ class Net(object):
 			self.tempDir = self.__makeFileName() + '_temp';
 		if(not os.path.exists(self.tempDir)):
 			os.mkdir(self.tempDir);
-		self.__saveModel(self.tempDir+'\\'+ fileName);
+		self.__saveModel(self.tempDir+os.path.sep+ fileName);
 		#clean up
-		files = glob.glob(self.tempDir+'\\*.zip')
+		files = glob.glob(self.tempDir+os.path.sep+'*.zip')
 		files.sort(key=os.path.getctime);
 		if len(files) > 10 :
 			for i in range(0,10):
@@ -135,17 +135,18 @@ class Net(object):
 	def train(self):
 		epoch=0
 		curcost=[]
+		fig, ax = plt.subplots()
+		plt.ylabel('cost');
+		plt.ioff()
 		if self.showPlot:
 			plt.ion()
-			fig, ax = plt.subplots()
-			plt.ylabel('cost');
-			plt.show();
 			plt.autoscale(enable=True,axis='both');
+			plt.show();
 		prvCost = 0.0;
 		patience = 0;
-		inputValsArray = [np.arange(start=0,stop=135,step=2),
-					#np.arange(start=46,stop=90,step=2),
-			   #np.arange(start=91,stop=135,step=2)
+		inputValsArray = [np.arange(start=0,stop=45,step=2),
+						  #np.arange(start=46,stop=90,step=2),
+			   			  #np.arange(start=91,stop=135,step=2)
 			   ];
 		while(patience <= self.patienceThreshold):
 			for inputVals in inputValsArray:
@@ -156,9 +157,8 @@ class Net(object):
 					self.getInputLayer().activations.set_value(np.array([rads]));
 					#########back propogation##########
 					curcost.extend([self.SGDS[-1](expected).tolist()]);
-					for i in range(-1, -len(self.net),-1):#skips output layer at zero index
+					for i in range(0, -len(self.net),-1):#skips output layer at zero index
 						self.SGDS[i](expected)
-						#self.SGDS[i](np.float32(self.net[i].activations.eval().mean()))
 					###################################
 				self.avgCost = (sum(curcost)/len(curcost));
 				prctCost = (((prvCost - self.avgCost)/self.avgCost)*100);
@@ -170,9 +170,7 @@ class Net(object):
 					plt.draw();
 				if prctCost<=0.0001 :
 					#as the learning rate decays adjust the learning rate down for fine tuning
-					if prctCost<=0 :
-						self.setLearningRate(self.getLearningRate()/(1+epoch*0.001));
-					#	patience = patience *10;
+					self.setLearningRate(self.getLearningRate() - (self.getLearningRate() * 0.01));
 					patience = patience + 1
 				else:
 					patience = 0;	
@@ -180,6 +178,8 @@ class Net(object):
 				epoch = epoch+1
 				if (epoch % 500)==0 :
 					self.__saveTemp()
+		plt.savefig(self.__makeFileName() + ".png")
+		plt.close()
 
 	def predict(self,ang):
 		rads = math.radians(ang);

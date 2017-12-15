@@ -242,4 +242,11 @@ ModelManifest.xml
 .fake/
 /__pycache__
 *.zip
-.vscode/settings.json
+.vscode/*
+dl4j/.settings/*
+dl4j/target/*
+kerastest.png
+kerastestModel.h5
+kerastestModel.json
+kerasSinModel.h5
+kerasSinModel.json

@@ -245,6 +245,7 @@ ModelManifest.xml
 .vscode/*
 dl4j/.settings/*
 dl4j/target/*
+models/*
 kerastest.png
 kerastestModel.h5
 kerastestModel.json
